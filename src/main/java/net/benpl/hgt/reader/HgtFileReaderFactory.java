@@ -5,8 +5,6 @@ import org.openstreetmap.osmosis.core.pipeline.common.TaskManager;
 import org.openstreetmap.osmosis.core.pipeline.common.TaskManagerFactory;
 import org.openstreetmap.osmosis.core.pipeline.v0_6.RunnableSourceManager;
 
-import java.io.File;
-
 class HgtFileReaderFactory extends TaskManagerFactory {
     @Override
     protected TaskManager createTaskManagerImpl(TaskConfiguration taskConfig) {

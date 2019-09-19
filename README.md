@@ -1,4 +1,4 @@
-# SRTM/DEM Hgt-Reader
+# SRTM/DEM HgtReader
 
 A small plug-in for the OpenStreetMap Osmosis Tool to read and convert SRTM/DEM .hgt file into contour lines.
 
@@ -19,7 +19,7 @@ A small plug-in for the OpenStreetMap Osmosis Tool to read and convert SRTM/DEM 
 |`contour-ext-medium`*|value of `contour-ext-key`, means the contour line is in 100 interval|String|elevation_medium|
 |`contour-ext-minor`*|value of `contour-ext-key`, means the contour line is in other intervals|String|elevation_minor|
 
-[*] In favor of [Mapsforge](https://github.com/mapsforge/mapsforge/blob/master/docs/Getting-Started-Map-Writer.md). Need to match the configuration of tag-mapping.xml.
+[*] In favor of [Mapsforge](https://github.com/mapsforge/mapsforge/blob/master/docs/Getting-Started-Map-Writer.md). Need to match with the configuration in tag-mapping.xml.
 
 ### Example
 
@@ -27,6 +27,6 @@ A small plug-in for the OpenStreetMap Osmosis Tool to read and convert SRTM/DEM 
 
 ## Plugin Installation
 
-- Download the latest version plugin (**jar-with-dependencies**) from [releases](https://github.com/plben/hgtreader/releases).
+- Download the latest version plugin (**jar-with-dependencies**) from [releases](https://github.com/plben/HgtReader/releases).
 - Create the directory "$USER_HOME/.openstreetmap/osmosis/plugins/" if not exist.
 - Copy the downloaded HgtReader-x.x.x-jar-with-dependencies.jar to this directory.

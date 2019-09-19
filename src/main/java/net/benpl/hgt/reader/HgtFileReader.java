@@ -87,47 +87,45 @@ public class HgtFileReader implements RunnableSource {
 
     @Override
     public void run() {
+        EntitySorter sorter = null;
+
         try {
-            sink.initialize(Collections.<String, Object>emptyMap());
+            Short[] words = loadHgtFile();
 
-            try {
-                Short[] words = loadHgtFile();
+            LOG.log(Level.INFO, String.format("minLon: %f, maxLon: %f", minLon - resolution / 2, maxLon + resolution / 2));
+            LOG.log(Level.INFO, String.format("minLat: %f, maxLat: %f", minLat - resolution / 2, maxLat + resolution / 2));
 
-                LOG.log(Level.INFO, String.format("minLon: %f, maxLon: %f", minLon - resolution / 2, maxLon + resolution / 2));
-                LOG.log(Level.INFO, String.format("minLat: %f, maxLat: %f", minLat - resolution / 2, maxLat + resolution / 2));
+            TiledImage tiledImage = buildImage(words);
 
-                TiledImage tiledImage = buildImage(words);
+            Collection<LineString> lines = buildContourLines(tiledImage);
 
-                Collection<LineString> lines = buildContourLines(tiledImage);
+            initOsmVariables();
 
-                initOsmVariables();
+            LOG.log(Level.INFO, "Write to output stream ... BEGIN");
 
-                try (EntitySorter entitySorter = new EntitySorter(new EntityContainerComparator(new EntityByTypeThenIdComparator()), false)) {
-                    LOG.log(Level.INFO, "Write to output stream ... BEGIN");
+            sorter = new EntitySorter(new EntityContainerComparator(new EntityByTypeThenIdComparator()), false);
+            sorter.setSink(sink);
+            sorter.process(new BoundContainer(new Bound(maxLon + resolution / 2, minLon - resolution / 2, maxLat + resolution / 2, minLat - resolution / 2, "https://www.benpl.net/thegoat/about.html")));
+            sorter.initialize(Collections.emptyMap());
 
-                    sink.process(new BoundContainer(new Bound(maxLon + resolution / 2, minLon - resolution / 2, maxLat + resolution / 2, minLat - resolution / 2, "https://www.benpl.net/thegoat/about.html")));
-                    entitySorter.setSink(sink);
+            for (LineString line : lines) {
+                Integer elev = ((Double) line.getUserData()).intValue();
+                if (elev < 50 || elev > 9000) continue;
 
-                    for (LineString line : lines) {
-                        Integer elev = ((Double) line.getUserData()).intValue();
-                        if (elev < 50 || elev > 9000) continue;
+                line.apply(jtsTransformation);
 
-                        line.apply(jtsTransformation);
-
-                        handleLineString(line, elev, entitySorter);
-                    }
-
-                    // Flush to output stream
-                    entitySorter.complete();
-
-                    LOG.log(Level.INFO, "Write to output stream ... END");
-                }
-
-            } catch (Exception e) {
-                throw new Error(e);
+                handleLineString(line, elev, sorter);
             }
+
+            // Flush to output stream
+            sorter.complete();
+
+            LOG.log(Level.INFO, "Write to output stream ... END");
+
+        } catch (Exception e) {
+            throw new Error(e);
         } finally {
-            sink.close();
+            if (sorter != null) sorter.close();
         }
     }
 
