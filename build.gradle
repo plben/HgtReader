@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+}
+
+group 'net.benpl'
+version '1.0.0'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+compileJava.options.encoding = 'UTF-8'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "http://maven.geomajas.org/"
+    }
+}
+
+dependencies {
+    implementation "javax.media:jai_core:1.1.3"
+    implementation "javax.media:jai_codec:1.1.3"
+    implementation "org.jaitools:jt-contour:1.5.0"
+    compileOnly "org.openstreetmap.osmosis:osmosis-core:0.47"
+}
+
+jar {
+    from('src/main/config/') {
+        filter {
+            line -> line.replace('${hgtfile.reader.version}', archiveVersion.get())
+        }
+    }
+}
+
+task fatJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set('jar-with-dependencies')
+    from {
+        (configurations.compileClasspath - configurations.compileOnly).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
+
+artifacts {
+    archives fatJar
+}
