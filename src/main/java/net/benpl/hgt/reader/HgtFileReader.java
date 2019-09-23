@@ -33,10 +33,10 @@ public class HgtFileReader implements RunnableSource {
 
     static {
         try {
-            OperationRegistry or = JAI.getDefaultInstance().getOperationRegistry();
-            or.registerDescriptor(new ContourDescriptor());
+            OperationRegistry registry = JAI.getDefaultInstance().getOperationRegistry();
+            registry.registerDescriptor(new ContourDescriptor());
             RenderedImageFactory rif = new ContourRIF();
-            RIFRegistry.register(or, "Contour", "org.jaitools.media.jai", rif);
+            RIFRegistry.register(registry, "Contour", "org.jaitools.media.jai", rif);
         } catch (Exception ignored) {
         }
     }
@@ -105,8 +105,8 @@ public class HgtFileReader implements RunnableSource {
 
             sorter = new EntitySorter(new EntityContainerComparator(new EntityByTypeThenIdComparator()), false);
             sorter.setSink(sink);
-            sorter.process(new BoundContainer(new Bound(maxLon + resolution / 2, minLon - resolution / 2, maxLat + resolution / 2, minLat - resolution / 2, "https://www.benpl.net/thegoat/about.html")));
             sorter.initialize(Collections.emptyMap());
+            sorter.process(new BoundContainer(new Bound(maxLon + resolution / 2, minLon - resolution / 2, maxLat + resolution / 2, minLat - resolution / 2, "https://www.benpl.net/thegoat/about.html")));
 
             for (LineString line : lines) {
                 Integer elev = ((Double) line.getUserData()).intValue();
@@ -117,7 +117,6 @@ public class HgtFileReader implements RunnableSource {
                 handleLineString(line, elev, sorter);
             }
 
-            // Flush to output stream
             sorter.complete();
 
             LOG.log(Level.INFO, "Write to output stream ... END");
@@ -269,8 +268,8 @@ public class HgtFileReader implements RunnableSource {
 
         for (int i = 0; i < points; i++) {
             if (i == points - 1 && line.isClosed()) {
-                ndId = wayNodes.get(0).getNodeId();
-                wayNodes.add(new WayNode(ndId));
+                WayNode wayNode = wayNodes.get(0);
+                wayNodes.add(new WayNode(wayNode.getNodeId(), wayNode.getLatitude(), wayNode.getLongitude()));
                 break;
             }
 
@@ -285,7 +284,7 @@ public class HgtFileReader implements RunnableSource {
                     coordinate.x);  // longitude
             sink.process(new NodeContainer(osmNode));
 
-            wayNodes.add(new WayNode(ndId));
+            wayNodes.add(new WayNode(ndId, coordinate.y, coordinate.x));
         }
 
         Way osmWay = new Way(new CommonEntityData(wayId, 1, timestamp, osmUser, 0), wayNodes);
